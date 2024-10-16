@@ -1,4 +1,4 @@
-import {firestore} from "@playoff/core/firebase/firebase.config.ts";
+import {firestore} from '@playoff/core/firebase/firebase.config.ts';
 import {
 	addDoc,
 	collection,
@@ -11,7 +11,7 @@ import {
 	QuerySnapshot,
 	setDoc
 } from 'firebase/firestore';
-import {Playoff, playoffConverter} from "@playoff/core/model/playoff.model.ts";
+import {Playoff, playoffConverter} from '@playoff/core/model/playoff.model.ts';
 
 /**
  * Retrieve all playoff
@@ -19,18 +19,18 @@ import {Playoff, playoffConverter} from "@playoff/core/model/playoff.model.ts";
  */
 export const getAllPlayoff = async (): Promise<QuerySnapshot<Playoff>> => {
 	return getDocs(
-		collection(firestore, `playoffs`).withConverter(playoffConverter)
+		collection(firestore, 'playoffs').withConverter(playoffConverter)
 	);
 }
 
 /**
  * Retrieve playoff by its uid
- * @param uid {string}
+ * @param playoffUid {string}
  * @return {Promise<DocumentSnapshot<Playoff>>}
  */
-export const getPlayoffByUid = async (uid: string): Promise<DocumentSnapshot<Playoff>> => {
+export const getPlayoffByUid = async (playoffUid: string): Promise<DocumentSnapshot<Playoff>> => {
 	return getDoc(
-		doc(firestore, `playoffs/${uid}`).withConverter(playoffConverter)
+		doc(firestore, `playoffs/${playoffUid}`).withConverter(playoffConverter)
 	);
 }
 
@@ -40,7 +40,7 @@ export const getPlayoffByUid = async (uid: string): Promise<DocumentSnapshot<Pla
  * @return {Promise<DocumentSnapshot<Playoff>>}
  */
 export const addPlayoff = async (playoff: Playoff): Promise<DocumentSnapshot<Playoff>> => {
-	const newPlayoff: DocumentReference<Playoff> = await addDoc(collection(firestore, `playoffs`).withConverter(playoffConverter), playoff)
+	const newPlayoff: DocumentReference<Playoff> = await addDoc(collection(firestore, 'playoffs').withConverter(playoffConverter), playoff)
 	return getPlayoffByUid(newPlayoff.id);
 }
 

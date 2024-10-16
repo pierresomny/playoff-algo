@@ -1,10 +1,12 @@
-import {Exercise} from "./exercise.model.ts";
+import {Exercise} from './exercise.model.ts';
 import {DocumentData, FirestoreDataConverter, QueryDocumentSnapshot, SnapshotOptions} from 'firebase/firestore';
 
 export interface Playoff {
 	uid: string;
 	date: string;
-	exercises: Exercise[];
+	candidateName: string;
+	recruiterUid: string;
+	exercises: { [exerciseUid: string]: Exercise };
 }
 
 /**
@@ -28,11 +30,9 @@ export const playoffConverter: FirestoreDataConverter<Playoff> = {
 		snapshot: QueryDocumentSnapshot,
 		options: SnapshotOptions
 	): Playoff {
-		const data: DocumentData = snapshot.data(options);
 		return {
-			uid: snapshot.id,
-			date: data.date,
-			exercises: data.exercies,
+			...(snapshot.data(options) as Playoff),
+			uid: snapshot.id
 		};
 	},
 };

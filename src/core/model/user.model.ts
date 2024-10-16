@@ -3,7 +3,15 @@ import {DocumentData, FirestoreDataConverter, QueryDocumentSnapshot, SnapshotOpt
 export interface User {
 	uid: string;
 	displayName: string;
-	photoUrl: string;
+	photoURL: string;
+	email: string;
+	role: UserRole;
+}
+
+export enum UserRole {
+	Admin = 5,
+	TechnicalRecruiter = 1,
+	TalentAdvocate = 0
 }
 
 /**
@@ -27,11 +35,9 @@ export const userConverter: FirestoreDataConverter<User> = {
 		snapshot: QueryDocumentSnapshot,
 		options: SnapshotOptions
 	): User {
-		const data: DocumentData = snapshot.data(options);
 		return {
-			uid: snapshot.id,
-			displayName: data.displayName,
-			photoUrl: data.photoUrl,
+			...(snapshot.data(options) as User),
+			uid: snapshot.id
 		};
 	},
 };

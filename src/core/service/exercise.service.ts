@@ -1,4 +1,4 @@
-import {firestore} from "@playoff/core/firebase/firebase.config.ts";
+import {firestore} from '@playoff/core/firebase/firebase.config.ts';
 import {
 	addDoc,
 	collection,
@@ -11,7 +11,7 @@ import {
 	QuerySnapshot,
 	setDoc
 } from 'firebase/firestore';
-import {Exercise, exerciseConverter} from "@playoff/core/model/exercise.model.ts";
+import {Exercise, exerciseConverter} from '@playoff/core/model/exercise.model.ts';
 
 /**
  * Retrieve all exercise
@@ -19,7 +19,7 @@ import {Exercise, exerciseConverter} from "@playoff/core/model/exercise.model.ts
  */
 export const getAllExercise = async (): Promise<QuerySnapshot<Exercise>> => {
 	return getDocs(
-		collection(firestore, `exercises`).withConverter(exerciseConverter)
+		collection(firestore, 'exercises').withConverter(exerciseConverter)
 	);
 }
 
@@ -40,7 +40,7 @@ export const getExerciseByUid = async (uid: string): Promise<DocumentSnapshot<Ex
  * @return {Promise<DocumentSnapshot<Exercise>>}
  */
 export const addExercise = async (exercise: Exercise): Promise<DocumentSnapshot<Exercise>> => {
-	const newExercise: DocumentReference<Exercise> = await addDoc(collection(firestore, `exercises`).withConverter(exerciseConverter), exercise)
+	const newExercise: DocumentReference<Exercise> = await addDoc(collection(firestore, 'exercises').withConverter(exerciseConverter), exercise)
 	return getExerciseByUid(newExercise.id);
 }
 

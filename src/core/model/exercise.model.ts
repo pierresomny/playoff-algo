@@ -4,8 +4,15 @@ export interface Exercise {
 	uid: string;
 	title: string;
 	content: string;
+	type: ExerciseType;
 	response?: string;
 	comment?: string;
+}
+
+export enum ExerciseType {
+	Algo,
+	Regex,
+	RunAlgo
 }
 
 /**
@@ -29,13 +36,9 @@ export const exerciseConverter: FirestoreDataConverter<Exercise> = {
 		snapshot: QueryDocumentSnapshot,
 		options: SnapshotOptions
 	): Exercise {
-		const data: DocumentData = snapshot.data(options);
 		return {
-			uid: snapshot.id,
-			title: data.title,
-			content: data.content,
-			response: data.response,
-			comment: data.comment
+			...(snapshot.data(options) as Exercise),
+			uid: snapshot.id
 		};
 	},
 };

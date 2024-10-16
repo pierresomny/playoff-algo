@@ -1,17 +1,16 @@
-import {firestore} from "@playoff/core/firebase/firebase.config.ts";
+import {firestore} from '@playoff/core/firebase/firebase.config.ts';
 import {
-	addDoc,
 	collection,
 	deleteDoc,
 	doc,
-	DocumentReference,
 	DocumentSnapshot,
 	getDoc,
 	getDocs,
 	QuerySnapshot,
-	setDoc
+	setDoc,
 } from 'firebase/firestore';
-import {User, userConverter} from "@playoff/core/model/user.model.ts";
+import {User, userConverter, UserRole} from '@playoff/core/model/user.model.ts';
+import {UserCredential} from '@firebase/auth';
 
 /**
  * Retrieve all user
@@ -19,29 +18,49 @@ import {User, userConverter} from "@playoff/core/model/user.model.ts";
  */
 export const getAllUser = async (): Promise<QuerySnapshot<User>> => {
 	return getDocs(
-		collection(firestore, `users`).withConverter(userConverter)
+		collection(firestore, 'users').withConverter(userConverter)
 	);
 }
 
 /**
- * Retrieve user by its uid
- * @param uid {string}
+ * Retrieve user by its email
+ * @param email
  * @return {Promise<DocumentSnapshot<User>>}
  */
-export const getUserByUid = async (uid: string): Promise<DocumentSnapshot<User>> => {
+export const getUserByEmail = async (email: string): Promise<DocumentSnapshot<User>> => {
 	return getDoc(
-		doc(firestore, `users/${uid}`).withConverter(userConverter)
+		doc(firestore, `users/${email}`).withConverter(userConverter)
 	);
 }
 
 /**
- * Create a new user object and
- * @param user {User}
+ * Determine if a user exist in the database, if not he is inserted as a new user
+ * @param userCredential {UserCredential}
  * @return {Promise<DocumentSnapshot<User>>}
  */
-export const addUser = async (user: User): Promise<DocumentSnapshot<User>> => {
-	const newUser: DocumentReference<User> = await addDoc(collection(firestore, `users`).withConverter(userConverter), user)
-	return getUserByUid(newUser.id);
+export const addUser = async (userCredential: UserCredential): Promise<DocumentSnapshot<User>> => {
+	
+	if (!userCredential.user.email) {
+		throw new Error('Invalid email');
+	}
+	
+	let user: DocumentSnapshot<User> = await getUserByEmail(
+		userCredential.user.email
+	);
+	
+	if (!user.exists()) {
+		const newUser: User = {
+			uid: userCredential.user.uid,
+			displayName: userCredential.user.displayName ?? '',
+			photoURL: userCredential.user.photoURL ?? '',
+			email: userCredential.user.email,
+			role: UserRole.TechnicalRecruiter
+		};
+		// Save new user at uid in collection.
+		await setDoc(doc(firestore, `users/${newUser.email}`), newUser);
+		user = await getUserByEmail(newUser.email);
+	}
+	return user;
 }
 
 /**
@@ -50,8 +69,8 @@ export const addUser = async (user: User): Promise<DocumentSnapshot<User>> => {
  * @return {Promise<DocumentSnapshot<User>>}
  */
 export const updateUser = async (user: User): Promise<DocumentSnapshot<User>> => {
-	await setDoc(doc(firestore, `users/${user.uid}`).withConverter(userConverter), user);
-	return getUserByUid(user.uid);
+	await setDoc(doc(firestore, `users/${user.email}`).withConverter(userConverter), user);
+	return getUserByEmail(user.email);
 }
 
 /**
@@ -61,4 +80,15 @@ export const updateUser = async (user: User): Promise<DocumentSnapshot<User>> =>
  */
 export const deleteUser = async (uid: string): Promise<void> => {
 	return deleteDoc(doc(firestore, `users/${uid}`));
+}
+
+/**
+ * Check if user has role
+ * @param email {string}
+ * @param role {UserRole}
+ * @return  {Promise<boolean>}
+ */
+export const userHasRole = async (email: string, role: UserRole): Promise<boolean> => {
+	const user = await getUserByEmail(email);
+	return user.data()?.role === role;
 }
